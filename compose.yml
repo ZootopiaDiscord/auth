@@ -17,7 +17,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
 
   iam:
-    image: ghcr.io/zootopiadiscord/auth:26.7.2.0
+    image: ghcr.io/zootopiadiscord/auth:main
     restart: unless-stopped
     environment:
       KC_DB_URL_HOST: db
