@@ -1,0 +1,4 @@
+keycloak_ansible_client_id: ansible
+keycloak_master_realm: master
+keycloak_realm_name: main
+keycloak_realm_display_name: Zootopia

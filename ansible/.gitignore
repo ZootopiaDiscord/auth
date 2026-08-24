@@ -1,0 +1,5 @@
+# https://github.com/github/gitignore/blob/main/Global/Ansible.gitignore
+*.retry
+.ansible/
+
+.vault_pass.txt
