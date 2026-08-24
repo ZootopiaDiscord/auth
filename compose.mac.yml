@@ -1,0 +1,19 @@
+services:
+  db:
+    labels:
+      - dev.orbstack.domains=db.auth.zoot.local
+  iam:
+    image: zoot-auth
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      KC_HOSTNAME: https://auth.zoot.local
+      KC_TRUSTSTORE_PATHS: /etc/ssl/certs/orbstack-root.crt
+    labels:
+      - dev.orbstack.domains=auth.zoot.local
+      - dev.orbstack.http-port=8080
+
+volumes:
+  db:
+    name: zoot-auth-db

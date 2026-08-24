@@ -1,0 +1,24 @@
+services:
+  db:
+    networks:
+      - default
+
+  iam:
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      KC_HOSTNAME: auth.zoot.tawmy.dev
+    networks:
+      - default
+      - reverse-proxy
+    labels:
+      caddy: auth.zoot.tawmy.dev
+
+volumes:
+  db:
+    name: zoot-auth-db
+
+networks:
+  reverse-proxy:
+    external: true
