@@ -5,5 +5,5 @@ all:
   children:
     sunset:
       hosts:
-        auth.zoot.tawmy.dev:
+        zoot.tawmy.dev:
           ansible_connection: ssh
