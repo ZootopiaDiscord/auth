@@ -26,7 +26,7 @@
       pkceEnabled: true
       pkceMethod: "S256"
       prompt: "none"
-      defaultScope: "openid identify"
+      defaultScope: "openid identify guilds.members.read"
       disableNonce: true
       syncMode: "IMPORT"
     mappers:
@@ -48,3 +48,10 @@
           syncMode: INHERIT
           claim: picture
           user.attribute: discordAvatar
+      - name: discordGuildRoles
+        identityProviderMapper: discord-guild-roles-idp-mapper
+        config:
+          syncMode: FORCE
+          guildId: "{{ discord_guild_id }}"
+          target: Realm roles
+          roleMap: "{{ discord_role_map | dict2items(key_name='key', value_name='value') | to_json }}"
