@@ -16,3 +16,6 @@
 
 - name: Set up clients
   ansible.builtin.import_tasks: clients/main.yml
+
+- name: Set up identity providers
+  ansible.builtin.import_tasks: identity-providers/main.yml
