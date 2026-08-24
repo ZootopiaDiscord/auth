@@ -19,3 +19,6 @@
 
 - name: Set up identity providers
   ansible.builtin.import_tasks: identity-providers/main.yml
+
+- name: Set up realm key providers
+  ansible.builtin.import_tasks: key-providers/main.yml
