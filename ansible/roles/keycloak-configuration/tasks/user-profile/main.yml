@@ -1,0 +1,74 @@
+---
+- name: Configure Declarative User Profile
+  community.general.keycloak_userprofile:
+    state: present
+
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    parent_id: "{{ keycloak_realm_name }}"
+
+    config:
+      kc_user_profile_config:
+        - attributes:
+            - name: username
+              displayName: ${username}
+              validations:
+                length:
+                  min: 3
+                  max: 255
+                username_prohibited_characters: {}
+                up_username_not_idn_homograph: {}
+              annotations: {}
+              permissions:
+                view:
+                  - admin
+                  - user
+                edit:
+                  - admin
+                  - user
+              multivalued: false
+            - name: email
+              displayName: ${email}
+              validations:
+                email: {}
+                length:
+                  max: 255
+              annotations: {}
+              permissions:
+                view:
+                  - admin
+                edit: []
+              multivalued: false
+            - name: discordId
+              displayName: Discord ID
+              validations:
+                length:
+                  max: 20
+              annotations: {}
+              permissions:
+                view:
+                  - admin
+                edit: []
+              multivalued: false
+              group: discord
+            - name: discordAvatar
+              displayName: Discord Avatar
+              validations:
+                length:
+                  max: 255
+              annotations: {}
+              permissions:
+                view:
+                  - admin
+                edit: []
+              multivalued: false
+              group: discord
+          groups:
+            - name: discord
+              displayHeader: Discord IdP data
+              displayDescription: Attributes retrieved from Discord IdP
+              annotations: { }

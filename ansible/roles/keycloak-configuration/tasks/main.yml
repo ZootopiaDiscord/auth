@@ -10,3 +10,6 @@
 
 - name: Set up required actions
   ansible.builtin.import_tasks: required-actions/main.yml
+
+- name: Set up user profile
+  ansible.builtin.import_tasks: user-profile/main.yml
