@@ -13,3 +13,6 @@
 
 - name: Set up user profile
   ansible.builtin.import_tasks: user-profile/main.yml
+
+- name: Set up clients
+  ansible.builtin.import_tasks: clients/main.yml
