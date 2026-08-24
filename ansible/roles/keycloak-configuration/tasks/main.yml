@@ -7,3 +7,6 @@
 
 - name: Set up authentication flows
   ansible.builtin.import_tasks: authentication-flows/main.yml
+
+- name: Set up required actions
+  ansible.builtin.import_tasks: required-actions/main.yml
