@@ -1,0 +1,75 @@
+name: Configure Keycloak
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  configure-keycloak:
+    name: Configure Keycloak (sunset)
+    runs-on: ubuntu-26.04
+    environment: sunset
+    env:
+      ANSIBLE_VAULT_PASSWORD_FILE: /tmp/.vault_pass
+      ENV: sunset
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # RUNNER SETUP
+
+      - name: Install Ansible
+        shell: bash
+        run: pip install "ansible-core==2.21.*"
+
+      - name: Install Ansible Galaxy collections
+        working-directory: ansible
+        run: ansible-galaxy collection install -r requirements.yml
+
+      - name: Write Ansible Vault password file
+        shell: bash
+        run: echo ${{ secrets.ANSIBLE_VAULT_PASSWORD }} > "${ANSIBLE_VAULT_PASSWORD_FILE}"
+
+      # SSH SETUP
+
+      - name: Setup SSH Known Hosts
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ vars.SSH_HOST_KEY }}" >> ~/.ssh/known_hosts
+
+      - name: Load SSH Private Key
+        id: op-ssh-private-key
+        uses: 1password/load-secrets-action@70062d7a876d3eb6334754fa26efd2fbd90c32f2 # v5.0.1
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          SSH_PRIVATE_KEY: "op://Zootopia/${{ vars.OP_SSH_PRIVATE_KEY_REFERENCE }}/private key?ssh-format=openssh"
+
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        with:
+          ssh-private-key: ${{ steps.op-ssh-private-key.outputs.SSH_PRIVATE_KEY }}
+
+      # ANSIBLE
+
+      - name: Run Ansible playbook
+        working-directory: ansible
+        run: |
+          ansible-playbook \
+            -i inventory/inventory.yml \
+            -l "${ENV}" \
+            configure.yml \
+            --vault-password-file "${ANSIBLE_VAULT_PASSWORD_FILE}"
+
+      # CLEANUP
+
+      - name: Cleanup Vault password file
+        if: always()
+        shell: bash
+        run: rm -f "${ANSIBLE_VAULT_PASSWORD_FILE}"
+
+      - name: Clean SSH
+        if: always()
+        run: |
+          rm -rf ~/.ssh/known_hosts
