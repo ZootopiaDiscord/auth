@@ -1,4 +1,61 @@
 ---
+- name: Create clients
+  community.general.keycloak_client:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    state: present
+    realm: "{{ keycloak_realm_name }}"
+    client_id: "{{ item.client_id }}"
+    name: "{{ item.name | default(item.client_id) }}"
+    description: "{{ item.description | default(omit) }}"
+    public_client: "{{ item.public_client | default(false) }}"
+    secret: "{{ (vault_clients[item.client_id].client_secret) | default(omit, true) }}"
+    client_authenticator_type: "{{ 'client-secret' if vault_clients[item.client_id].client_secret is defined else 'client-jwt' }}"
+    redirect_uris: "{{ item.redirect_uris | default(['']) }}"
+    web_origins: "{{ item.web_origins | default(['']) }}"
+    consent_required: "{{ item.consent_required | default(true) }}"
+    attributes:
+      pkce.code.challenge.method: "{{ 'S256' if item.pkce | default(true) else '' }}"
+      par.require: "{{ item.pushed_authorization_requests | default(true) }}"
+      require.pushed.authorization.requests: "{{ item.pushed_authorization_requests | default(true) }}"
+      post.logout.redirect.uris: "{{ item.post_logout_redirect_uris | default(['']) | join('##') }}"
+      dpop.bound.access.tokens: "{{ item.public_client | default(false) }}"
+      use.jwks.url: "{{ true if item.jwks_url is defined else false }}"
+      jwks.url: "{{ item.jwks_url | default('') }}"
+      jwt.credential.certificate: "{{ item.certificate | default('') }}"
+      token.endpoint.auth.signing.alg: "{{ item.certificate_algorithm | default('ES256') }}"
+      frontchannel.logout.url: "{{ item.frontchannel_logout_url | default('') }}"
+      backchannel.logout.url: "{{ item.backchannel_logout_url | default(omit) }}"
+      backchannel.logout.revoke.offline.tokens: "false"
+      backchannel.logout.session.required: "true"
+    standard_flow_enabled: "{{ item.authorization_code_flow | default(false) }}"
+    service_accounts_enabled: "{{ item.client_credentials_flow | default(false) }}"
+    direct_access_grants_enabled: false
+    frontchannel_logout: "{{ false if item.backchannel_logout_url is defined else true }}"
+  loop: "{{ clients | default([]) + local_clients | default([]) }}"
+  loop_control:
+    label: "{{ item.client_id }}"
+
+- name: Update client scopes
+  community.general.keycloak_clientscope_type:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    realm: "{{ keycloak_realm_name }}"
+    client_id: "{{ item.client_id }}"
+    optional_clientscopes: "{{ item.optional_client_scopes | default([]) }}"
+    default_clientscopes: "{{ item.default_client_scopes | default(['basic', 'acr', 'web-origins']) }}"
+  loop: "{{ clients | default([]) + local_clients | default([]) }}"
+  loop_control:
+    label: "{{ item.client_id }}"
+
 - name: Disable account console client
   community.general.keycloak_client:
     auth_keycloak_url: "{{ keycloak_url }}"

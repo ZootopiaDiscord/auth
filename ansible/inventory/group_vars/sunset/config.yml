@@ -1,1 +1,10 @@
 keycloak_url: https://auth.zoot.tawmy.dev
+
+clients:
+  - client_id: portainer
+    name: Portainer
+    authorization_code_flow: true
+    redirect_uris:
+      - https://portainer.zoot.tawmy.dev
+    pkce: false
+    pushed_authorization_requests: false
