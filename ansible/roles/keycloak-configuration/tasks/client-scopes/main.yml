@@ -35,6 +35,7 @@
             claim_name: "preferred_username"
           - name: "profile"
           - name: "picture"
+            user_attribute: "discordAvatar"
           - name: "website"
           - name: "gender"
           - name: "birthdate"
