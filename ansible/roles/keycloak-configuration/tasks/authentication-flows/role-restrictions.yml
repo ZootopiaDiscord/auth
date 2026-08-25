@@ -65,3 +65,6 @@
               alias: "post login - deny non mod"
               config:
                 denyErrorMessage: "Only members of {{ realm_role_mod }} can sign in to this application."
+
+      - providerId: "allow-access-authenticator"
+        requirement: "REQUIRED"
