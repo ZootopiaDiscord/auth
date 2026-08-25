@@ -17,6 +17,9 @@
 - name: Set up realm roles
   ansible.builtin.import_tasks: realm-roles/main.yml
 
+- name: Set up client scopes
+  ansible.builtin.import_tasks: client-scopes/main.yml
+
 - name: Set up clients
   ansible.builtin.import_tasks: clients/main.yml
 
