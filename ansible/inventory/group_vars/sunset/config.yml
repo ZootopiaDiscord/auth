@@ -6,5 +6,7 @@ clients:
     authorization_code_flow: true
     redirect_uris:
       - https://portainer.zoot.tawmy.dev
+    default_client_scopes:
+      - "{{ client_scope_zpd }}"
     pkce: false
     pushed_authorization_requests: false
