@@ -4,12 +4,18 @@ keycloak_realm_name: main
 keycloak_realm_display_name: Zootopia
 
 keycloak_realm_roles:
-  - Mod
-  - Zootopian Police
+  - "{{ realm_role_mod }}"
+  - "{{ realm_role_zpd }}"
   - Junior ZPD
+
+realm_role_mod: Mod
+client_scope_mod: restrictto-mod
+realm_role_zpd: Zootopian Police
+client_scope_zpd: restrictto-zootopian-police
+role_restriction_post_login_flow: post login - role restrictions
 
 discord_guild_id: "164188105031680000"
 discord_role_map:
-  "563287715068772353": Mod
-  "164208316807905282": Zootopian Police
+  "563287715068772353": "{{ realm_role_mod }}"
+  "164208316807905282": "{{ realm_role_zpd }}"
   "563264784938565632": Junior ZPD

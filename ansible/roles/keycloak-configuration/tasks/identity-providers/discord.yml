@@ -12,6 +12,7 @@
     enabled: true
     alias: discord
     display_name: Discord
+    post_broker_login_flow_alias: "{{ role_restriction_post_login_flow }}"
     config:
       issuer: https://discord.com
       authorizationUrl: https://discord.com/api/oauth2/authorize

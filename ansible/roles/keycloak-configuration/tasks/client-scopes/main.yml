@@ -1,4 +1,30 @@
 ---
+# Role restriction markers. They carry no claims; assigning one to a client as a
+# default scope is what makes the flows in authentication-flows/ deny that client
+# to anyone without the matching role.
+- name: Create role restriction client scopes
+  community.general.keycloak_clientscope:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    realm: "{{ keycloak_realm_name }}"
+    name: "{{ item.scope }}"
+    description: "Marks a client as restricted to the {{ item.role }} realm role"
+    protocol: openid-connect
+    attributes:
+      include.in.token.scope: "false"
+      display.on.consent.screen: "false"
+  loop:
+    - scope: "{{ client_scope_zpd }}"
+      role: "{{ realm_role_zpd }}"
+    - scope: "{{ client_scope_mod }}"
+      role: "{{ realm_role_mod }}"
+  loop_control:
+    label: "{{ item.scope }}"
+
 - name: Configure default and optional client scopes
   community.general.keycloak_clientscope_type:
     auth_keycloak_url: "{{ keycloak_url }}"

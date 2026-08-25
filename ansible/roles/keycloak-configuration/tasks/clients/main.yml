@@ -51,7 +51,7 @@
     realm: "{{ keycloak_realm_name }}"
     client_id: "{{ item.client_id }}"
     optional_clientscopes: "{{ item.optional_client_scopes | default([]) }}"
-    default_clientscopes: "{{ item.default_client_scopes | default(['basic', 'acr', 'web-origins']) }}"
+    default_clientscopes: "{{ (['basic', 'acr', 'web-origins'] + (item.default_client_scopes | default([]))) | unique }}"
   loop: "{{ clients | default([]) + local_clients | default([]) }}"
   loop_control:
     label: "{{ item.client_id }}"
