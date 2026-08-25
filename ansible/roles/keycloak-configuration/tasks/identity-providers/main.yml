@@ -1,0 +1,3 @@
+---
+- name: Create Discord identity provider
+  ansible.builtin.import_tasks: discord.yml

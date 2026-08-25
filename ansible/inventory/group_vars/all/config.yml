@@ -1,0 +1,15 @@
+keycloak_ansible_client_id: ansible
+keycloak_master_realm: master
+keycloak_realm_name: main
+keycloak_realm_display_name: Zootopia
+
+keycloak_realm_roles:
+  - Mod
+  - Zootopian Police
+  - Junior ZPD
+
+discord_guild_id: "164188105031680000"
+discord_role_map:
+  "563287715068772353": Mod
+  "164208316807905282": Zootopian Police
+  "563264784938565632": Junior ZPD

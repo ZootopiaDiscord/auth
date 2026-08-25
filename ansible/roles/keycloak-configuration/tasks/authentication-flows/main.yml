@@ -1,0 +1,3 @@
+---
+- name: Configure browser flow
+  ansible.builtin.import_tasks: browser.yml

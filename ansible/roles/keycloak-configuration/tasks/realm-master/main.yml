@@ -1,0 +1,37 @@
+---
+- name: Configure Master realm
+  community.general.keycloak_realm:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    # General
+    realm: "{{ keycloak_master_realm | default('master') }}"
+    enabled: true
+    ssl_required: "all"
+
+    # Login
+    password_policy: "length(12)"
+
+    # Security defenses
+    ## Brute force detection
+    brute_force_protected: true
+    failure_factor: 3
+
+    # Events
+    admin_events_enabled: true
+    admin_events_details_enabled: true
+    events_enabled: true
+    events_expiration: 7776000 # 90 days
+
+    # Tokens
+    default_signature_algorithm: ES256
+
+    # Authentication Policies
+    ## Webauthn Passwordless Policy
+    web_authn_policy_passwordless_passkeys_enabled: true
+
+    attributes:
+      adminEventsExpiration: "7776000" # 90 days

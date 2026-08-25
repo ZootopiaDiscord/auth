@@ -1,0 +1,15 @@
+---
+- name: Create Main realm roles
+  community.general.keycloak_role:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    realm: "{{ keycloak_realm_name }}"
+    name: "{{ realm_role }}"
+    state: present
+  loop: "{{ keycloak_realm_roles }}"
+  loop_control:
+    loop_var: realm_role

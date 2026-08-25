@@ -1,0 +1,102 @@
+
+- name: Build list of realms for key providers
+  ansible.builtin.set_fact:
+    realms_for_key_providers: "{{ [keycloak_realm_name, (keycloak_master_realm | default('master'))] | unique }}"
+
+- name: Create ECDSA (sig) key provider
+  community.general.keycloak_component:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    name: ecdsa-generated
+    state: present
+    parent_id: "{{ item }}"
+    provider_id: ecdsa-generated
+    provider_type: org.keycloak.keys.KeyProvider
+    config:
+      ecGenerateCertificate: true
+      ecdsaEllipticCurveKey: P-256
+      active: true
+      enabled: true
+      priority: 201
+  loop: "{{ realms_for_key_providers }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Create ECDH (enc) key provider
+  community.general.keycloak_component:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    name: ecdh-generated
+    state: present
+    parent_id: "{{ item }}"
+    provider_id: ecdh-generated
+    provider_type: org.keycloak.keys.KeyProvider
+    config:
+      ecGenerateCertificate: true
+      ecdhEllipticCurveKey: P-256
+      ecdhAlgorithm: ECDH-ES+A256KW
+      active: true
+      enabled: true
+      priority: 200
+  loop: "{{ realms_for_key_providers }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Delete rsa-generated key provider
+  community.general.keycloak_component:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    name: rsa-generated
+    state: absent
+    parent_id: "{{ item }}"
+    provider_id: rsa-generated
+    provider_type: org.keycloak.keys.KeyProvider
+  loop: "{{ realms_for_key_providers }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Delete rsa-enc-generated key provider
+  community.general.keycloak_component:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    name: rsa-enc-generated
+    state: absent
+    parent_id: "{{ item }}"
+    provider_id: rsa-enc-generated
+    provider_type: org.keycloak.keys.KeyProvider
+  loop: "{{ realms_for_key_providers }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Delete fallback-ES256 key provider
+  community.general.keycloak_component:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    name: fallback-ES256
+    state: absent
+    parent_id: "{{ item }}"
+    provider_id: fallback-ES256
+    provider_type: org.keycloak.keys.KeyProvider
+  loop: "{{ realms_for_key_providers }}"
+  loop_control:
+    label: "{{ item }}"

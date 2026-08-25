@@ -1,0 +1,38 @@
+---
+- name: Define browser flow alias
+  ansible.builtin.set_fact:
+    browser_flow_alias: browser - discord only
+
+- name: Configure custom browser flow
+  community.general.keycloak_authentication_v2:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    realm: "{{ keycloak_realm_name }}"
+    alias: "{{ browser_flow_alias }}"
+    description: "Browser based authentication"
+    state: present
+    authenticationExecutions:
+      - providerId: "auth-cookie"
+        requirement: "ALTERNATIVE"
+
+      - providerId: "identity-provider-redirector"
+        requirement: "ALTERNATIVE"
+        authenticationConfig:
+          alias: "discord"
+          config:
+            defaultProvider: "discord"
+
+- name: Bind browser flow to realm
+  community.general.keycloak_realm:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    realm: "{{ keycloak_realm_name }}"
+    browserFlow: "{{ browser_flow_alias }}"

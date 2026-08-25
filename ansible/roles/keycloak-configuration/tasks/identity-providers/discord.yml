@@ -1,0 +1,57 @@
+---
+- name: Configure Discord identity provider
+  community.general.keycloak_identity_provider:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    realm: "{{ keycloak_realm_name }}"
+    provider_id: oidc
+    enabled: true
+    alias: discord
+    display_name: Discord
+    config:
+      issuer: https://discord.com
+      authorizationUrl: https://discord.com/api/oauth2/authorize
+      tokenUrl: https://discord.com/api/oauth2/token
+      userInfoUrl: https://discord.com/api/oauth2/userinfo
+      jwksUrl: https://discord.com/api/oauth2/keys
+      clientAuthMethod: client_secret_post
+      clientId: "{{ vault_discord_client_id }}"
+      clientSecret: "{{ vault_discord_client_secret }}"
+      validateSignature: true
+      useJwksUrl: true
+      pkceEnabled: true
+      pkceMethod: "S256"
+      prompt: "none"
+      defaultScope: "openid identify guilds.members.read"
+      disableNonce: true
+      syncMode: "IMPORT"
+    mappers:
+      - name: discordId
+        identityProviderMapper: oidc-user-attribute-idp-mapper
+        config:
+          syncMode: INHERIT
+          claim: sub
+          user.attribute: discordId
+      - name: discordUsername
+        identityProviderMapper: oidc-user-attribute-idp-mapper
+        config:
+          syncMode: FORCE
+          claim: preferred_username
+          user.attribute: username
+      - name: discordAvatar
+        identityProviderMapper: oidc-user-attribute-idp-mapper
+        config:
+          syncMode: INHERIT
+          claim: picture
+          user.attribute: discordAvatar
+      - name: discordGuildRoles
+        identityProviderMapper: discord-guild-roles-idp-mapper
+        config:
+          syncMode: FORCE
+          guildId: "{{ discord_guild_id }}"
+          target: Realm roles
+          roleMap: "{{ discord_role_map | dict2items(key_name='key', value_name='value') | to_json }}"
