@@ -1,0 +1,22 @@
+---
+- name: Create and configure Main realm
+  community.general.keycloak_realm:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    # General
+    realm: "{{ keycloak_realm_name }}"
+    enabled: true
+    display_name_html: <div class="kc-logo-text"><span>{{ keycloak_realm_display_name }}</span></div>
+    ssl_required: "all"
+
+    # Security defenses
+    ## Brute force detection
+    brute_force_protected: true
+    failure_factor: 5
+
+    # Tokens
+    default_signature_algorithm: ES256

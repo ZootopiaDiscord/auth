@@ -1,0 +1,7 @@
+- name: Configure Keycloak
+  hosts: all
+  gather_facts: true
+  roles:
+    - role: keycloak-configuration
+      tags:
+        - configure

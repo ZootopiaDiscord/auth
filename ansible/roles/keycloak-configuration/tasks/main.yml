@@ -1,0 +1,30 @@
+---
+- name: Set up Master realm
+  ansible.builtin.import_tasks: realm-master/main.yml
+
+- name: Set up Main realm
+  ansible.builtin.import_tasks: realm-main/main.yml
+
+- name: Set up authentication flows
+  ansible.builtin.import_tasks: authentication-flows/main.yml
+
+- name: Set up required actions
+  ansible.builtin.import_tasks: required-actions/main.yml
+
+- name: Set up user profile
+  ansible.builtin.import_tasks: user-profile/main.yml
+
+- name: Set up realm roles
+  ansible.builtin.import_tasks: realm-roles/main.yml
+
+- name: Set up client scopes
+  ansible.builtin.import_tasks: client-scopes/main.yml
+
+- name: Set up clients
+  ansible.builtin.import_tasks: clients/main.yml
+
+- name: Set up identity providers
+  ansible.builtin.import_tasks: identity-providers/main.yml
+
+- name: Set up realm key providers
+  ansible.builtin.import_tasks: key-providers/main.yml

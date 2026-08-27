@@ -1,0 +1,39 @@
+---
+- name: Reset protocol mappers buffer
+  ansible.builtin.set_fact:
+    current_protocol_mappers: []
+
+- name: Build protocol mappers list for scope '{{ client_scope.name }}'
+  ansible.builtin.set_fact:
+    current_protocol_mappers: "{{ current_protocol_mappers + [{
+        'name': mapper.name,
+        'protocol': 'openid-connect',
+        'protocolMapper': mapper.protocol_mapper | default('oidc-usermodel-attribute-mapper'),
+        'config': {
+          'claim.name': mapper.claim_name | default(mapper.name),
+          'user.attribute': mapper.user_attribute | default(mapper.name),
+          'jsonType.label': mapper.json_type | default('String'),
+          'id.token.claim': mapper.id_token | default(true),
+          'access.token.claim': mapper.access_token | default(false),
+          'userinfo.token.claim': true,
+          'introspection.token.claim': true,
+          'multivalued': mapper.multivalued | default(false)
+        }
+      }] }}"
+  loop: "{{ client_scope.attribute_mappers }}"
+  loop_control:
+    loop_var: mapper
+
+- name: Apply client scope mappers for '{{ client_scope.name }}'
+  community.general.keycloak_clientscope:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    realm: "{{ keycloak_realm_name }}"
+    name: "{{ client_scope.name }}"
+    protocol_mappers: "{{ current_protocol_mappers }}"
+    attributes:
+      include.in.token.scope: "{{ client_scope.include_in_token_scope | default('true') }}"

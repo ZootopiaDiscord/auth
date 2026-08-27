@@ -1,0 +1,9 @@
+---
+all:
+  vars:
+    ansible_user: ansible
+  children:
+    sunset:
+      hosts:
+        zoot.tawmy.dev:
+          ansible_connection: ssh

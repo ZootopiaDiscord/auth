@@ -1,0 +1,63 @@
+---
+- name: Configure Master realm required actions
+  community.general.keycloak_authentication_required_actions:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    realm: "{{ keycloak_master_realm | default('master') }}"
+    required_actions:
+      - alias: "UPDATE_PASSWORD"
+        name: "Update Password"
+        enabled: true
+        defaultAction: true
+        priority: 54
+      - alias: "CONFIGURE_TOTP"
+        name: "Configure OTP"
+        enabled: true
+        defaultAction: true
+        priority: 57
+    state: present
+
+- name: Configure Main realm required actions
+  community.general.keycloak_authentication_required_actions:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    realm: "{{ keycloak_realm_name }}"
+    required_actions:
+      # Accounts are managed entirely through the Discord identity provider, so
+      # every credential and profile self-service action is turned off.
+      - alias: "UPDATE_PROFILE"
+        name: "Update Profile"
+        enabled: false
+      - alias: "VERIFY_EMAIL"
+        name: "Verify Email"
+        enabled: false
+      - alias: "CONFIGURE_TOTP"
+        name: "Configure OTP"
+        enabled: false
+      - alias: "UPDATE_PASSWORD"
+        name: "Update Password"
+        enabled: false
+      - alias: "webauthn-register"
+        name: "Webauthn Register"
+        enabled: false
+      - alias: "webauthn-register-passwordless"
+        name: "Webauthn Register Passwordless"
+        enabled: false
+      - alias: "delete_credential"
+        name: "Delete Credential"
+        enabled: false
+      - alias: "idp_link"
+        name: "Linking Identity Provider"
+        enabled: false
+      - alias: "CONFIGURE_RECOVERY_AUTHN_CODES"
+        name: "Recovery Authentication Codes"
+        enabled: false
+    state: present

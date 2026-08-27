@@ -1,0 +1,95 @@
+---
+- name: Define browser flow alias
+  ansible.builtin.set_fact:
+    browser_flow_alias: browser - discord only
+
+- name: Configure custom browser flow
+  community.general.keycloak_authentication_v2:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    realm: "{{ keycloak_realm_name }}"
+    alias: "{{ browser_flow_alias }}"
+    description: "Browser based authentication"
+    state: present
+    authenticationExecutions:
+      - subFlow: "{{ browser_flow_alias }} - login"
+        requirement: "REQUIRED"
+        authenticationExecutions:
+          - providerId: "auth-cookie"
+            requirement: "ALTERNATIVE"
+
+          - providerId: "identity-provider-redirector"
+            requirement: "ALTERNATIVE"
+            authenticationConfig:
+              alias: "discord"
+              config:
+                defaultProvider: "discord"
+
+      # The role restrictions. Only reached by logins the SSO cookie satisfies; the
+      # other half of each of these lives in role-restrictions.yml.
+      - subFlow: "{{ browser_flow_alias }} - zootopian police"
+        requirement: "CONDITIONAL"
+        authenticationExecutions:
+          - providerId: "conditional-client-scope"
+            requirement: "REQUIRED"
+            authenticationConfig:
+              alias: "browser - client is zootopian police only"
+              config:
+                client_scope: "{{ client_scope_zpd }}"
+                negate: "false"
+
+          - providerId: "conditional-user-role"
+            requirement: "REQUIRED"
+            authenticationConfig:
+              alias: "browser - not zootopian police"
+              config:
+                condUserRole: "{{ realm_role_zpd }}"
+                negate: "true"
+
+          - providerId: "deny-access-authenticator"
+            requirement: "REQUIRED"
+            authenticationConfig:
+              alias: "browser - deny non zootopian police"
+              config:
+                denyErrorMessage: "Only members of the {{ realm_role_zpd }} can sign in to this application."
+
+      - subFlow: "{{ browser_flow_alias }} - mod"
+        requirement: "CONDITIONAL"
+        authenticationExecutions:
+          - providerId: "conditional-client-scope"
+            requirement: "REQUIRED"
+            authenticationConfig:
+              alias: "browser - client is mod only"
+              config:
+                client_scope: "{{ client_scope_mod }}"
+                negate: "false"
+
+          - providerId: "conditional-user-role"
+            requirement: "REQUIRED"
+            authenticationConfig:
+              alias: "browser - not mod"
+              config:
+                condUserRole: "{{ realm_role_mod }}"
+                negate: "true"
+
+          - providerId: "deny-access-authenticator"
+            requirement: "REQUIRED"
+            authenticationConfig:
+              alias: "browser - deny non mod"
+              config:
+                denyErrorMessage: "Only members of {{ realm_role_mod }} can sign in to this application."
+
+- name: Bind browser flow to realm
+  community.general.keycloak_realm:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    realm: "{{ keycloak_realm_name }}"
+    browserFlow: "{{ browser_flow_alias }}"

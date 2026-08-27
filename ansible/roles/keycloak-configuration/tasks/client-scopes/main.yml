@@ -1,0 +1,100 @@
+---
+# Role restriction markers. They carry no claims; assigning one to a client as a
+# default scope is what makes the flows in authentication-flows/ deny that client
+# to anyone without the matching role.
+- name: Create role restriction client scopes
+  community.general.keycloak_clientscope:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    realm: "{{ keycloak_realm_name }}"
+    name: "{{ item.scope }}"
+    description: "Marks a client as restricted to the {{ item.role }} realm role"
+    protocol: openid-connect
+    attributes:
+      include.in.token.scope: "false"
+      display.on.consent.screen: "false"
+  loop:
+    - scope: "{{ client_scope_zpd }}"
+      role: "{{ realm_role_zpd }}"
+    - scope: "{{ client_scope_mod }}"
+      role: "{{ realm_role_mod }}"
+  loop_control:
+    label: "{{ item.scope }}"
+
+- name: Configure default and optional client scopes
+  community.general.keycloak_clientscope_type:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_realm: master
+    auth_client_id: "{{ keycloak_ansible_client_id }}"
+    auth_client_secret: "{{ vault_keycloak_ansible_client_secret }}"
+    validate_certs: "{{ validate_certs | default(true) }}"
+
+    realm: "{{ keycloak_realm_name }}"
+    optional_clientscopes: []
+    default_clientscopes:
+      - acr
+      - basic
+      - web-origins
+
+- name: Modify 'profile', 'email', and 'roles' client scope mappers
+  vars:
+    client_scope_modifications:
+      - name: profile
+        attribute_mappers:
+          - name: "full name"
+            protocol_mapper: "oidc-full-name-mapper"
+          - name: "given name"
+            claim_name: "given_name"
+            user_attribute: "firstName"
+          - name: "family name"
+            claim_name: "family_name"
+            user_attribute: "lastName"
+          - name: "middle name"
+            claim_name: "middle_name"
+            user_attribute: "middleName"
+          - name: "nickname"
+          - name: "username"
+            claim_name: "preferred_username"
+          - name: "profile"
+          - name: "picture"
+            user_attribute: "discordAvatar"
+          - name: "website"
+          - name: "gender"
+          - name: "birthdate"
+          - name: "zoneinfo"
+          - name: "locale"
+          - name: "updated at"
+            claim_name: "updated_at"
+            user_attribute: "updatedAt"
+            json_type: "long"
+      - name: email
+        attribute_mappers:
+          - name: "email"
+          - name: "email verified"
+            claim_name: "email_verified"
+            user_attribute: "emailVerified"
+            json_type: "boolean"
+            protocol_mapper: "oidc-usermodel-property-mapper"
+      - name: roles
+        attribute_mappers:
+          - name: "realm roles"
+            claim_name: "realm_access.roles"
+            multivalued: true
+            access_token: true
+            id_token: false
+            protocol_mapper: "oidc-usermodel-realm-role-mapper"
+          - name: "client roles"
+            claim_name: "resource_access.${client_id}.roles"
+            multivalued: true
+            access_token: true
+            id_token: false
+            protocol_mapper: "oidc-usermodel-client-role-mapper"
+  ansible.builtin.include_tasks: modify_scope.yml
+  loop: "{{ client_scope_modifications }}"
+  loop_control:
+    loop_var: client_scope
+    label: "{{ client_scope.name }}"

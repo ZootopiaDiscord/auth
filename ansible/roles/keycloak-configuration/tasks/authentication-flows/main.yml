@@ -1,0 +1,6 @@
+---
+- name: Configure browser flow
+  ansible.builtin.import_tasks: browser.yml
+
+- name: Configure role restriction flow
+  ansible.builtin.import_tasks: role-restrictions.yml

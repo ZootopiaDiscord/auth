@@ -1,0 +1,28 @@
+# Only extensions/ is consumed by the Dockerfile; keep everything else (secrets,
+# VCS, IDE, infra, build artifacts) out of the build context.
+
+# Build artifacts
+**/target/
+
+# Secrets and local config
+.env
+ansible/
+export/
+
+# Version control and CI
+.git/
+.github/
+
+# Editor / IDE / OS
+.idea/
+.run/
+.claude/
+.DS_Store
+
+# Docs and compose (not needed inside the image)
+CLAUDE.md
+compose*.yml
+
+# Docker files themselves
+Dockerfile
+.dockerignore

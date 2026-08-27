@@ -10,6 +10,8 @@ services:
     environment:
       KC_HOSTNAME: https://auth.zoot.local
       KC_TRUSTSTORE_PATHS: /etc/ssl/certs/orbstack-root.crt
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
     labels:
       - dev.orbstack.domains=auth.zoot.local
       - dev.orbstack.http-port=8080

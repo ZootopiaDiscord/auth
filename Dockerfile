@@ -9,6 +9,7 @@ FROM quay.io/keycloak/keycloak:$KEYCLOAK_VERSION AS builder
 ENV KC_DB=postgres
 ENV KC_HEALTH_ENABLED=true
 ENV KC_FEATURES_DISABLED=ciba,device-flow,kerberos
+COPY --from=extensions /build/discord-guild-roles/target/keycloak-discord-guild-roles.jar /opt/keycloak/providers/
 RUN /opt/keycloak/bin/kc.sh build
 
 FROM quay.io/keycloak/keycloak:$KEYCLOAK_VERSION
