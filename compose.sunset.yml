@@ -12,12 +12,12 @@ services:
         limits:
           memory: 1G
     environment:
-      KC_HOSTNAME: auth.zoot.tawmy.dev
+      KC_HOSTNAME: auth.zootopia.chat
     networks:
       - default
       - reverse-proxy
     labels:
-      caddy: auth.zoot.tawmy.dev
+      caddy: auth.zootopia.chat
 
 volumes:
   db:

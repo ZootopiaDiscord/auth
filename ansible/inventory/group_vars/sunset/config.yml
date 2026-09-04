@@ -1,11 +1,11 @@
-keycloak_url: https://auth.zoot.tawmy.dev
+keycloak_url: https://auth.zootopia.chat
 
 clients:
   - client_id: portainer
     name: Portainer
     authorization_code_flow: true
     redirect_uris:
-      - https://portainer.zoot.tawmy.dev
+      - https://portainer.zootopia.chat
     default_client_scopes:
       - "{{ client_scope_zpd }}"
     pkce: false
