@@ -20,8 +20,8 @@
       userInfoUrl: https://discord.com/api/oauth2/userinfo
       jwksUrl: https://discord.com/api/oauth2/keys
       clientAuthMethod: client_secret_post
-      clientId: "{{ vault_discord_client_id }}"
-      clientSecret: "{{ vault_discord_client_secret }}"
+      clientId: "{{ discord_client_id | default(vault_discord_client_id) }}"
+      clientSecret: "{{ discord_client_secret | default(vault_discord_client_secret) }}"
       validateSignature: true
       useJwksUrl: true
       pkceEnabled: true

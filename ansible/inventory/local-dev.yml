@@ -6,3 +6,21 @@ all:
           ansible_connection: local
           validate_certs: false
           keycloak_url: https://auth.zoot.local
+
+          discord_client_id: "{{ vault_discord_local_client_id }}"
+          discord_client_secret: "{{ vault_discord_local_client_secret }}"
+
+          local_clients:
+            - client_id: aio-local
+              name: Zootopia AIO (local)
+              authorization_code_flow: true
+              consent_required: false
+              redirect_uris:
+                - https://app.zoot.local/signin-oidc
+              post_logout_redirect_uris:
+                - https://app.zoot.local/signout-callback-oidc
+              jwks_url: https://zoot.local/.well-known/jwks
+              backchannel_logout_url: https://zoot.local/signout-backchannel-oidc
+              optional_client_scopes:
+                - profile
+                - roles
