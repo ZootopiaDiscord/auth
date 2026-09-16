@@ -10,3 +10,31 @@ clients:
       - "{{ client_scope_zpd }}"
     pkce: false
     pushed_authorization_requests: false
+
+  - client_id: aio
+    name: Zootopia AIO
+    authorization_code_flow: true
+    consent_required: false
+    redirect_uris:
+      - https://app.zootopia.chat/signin-oidc
+    post_logout_redirect_uris:
+      - https://app.zootopia.chat/signout-callback-oidc
+    jwks_url: https://zootopia.chat/.well-known/jwks
+    backchannel_logout_url: https://zootopia.chat/signout-backchannel-oidc
+    optional_client_scopes:
+      - profile
+      - roles
+
+  - client_id: aio-dev
+    name: Zootopia AIO (dev)
+    authorization_code_flow: true
+    consent_required: false
+    redirect_uris:
+      - https://app.zoot.tawmy.dev/signin-oidc
+    post_logout_redirect_uris:
+      - https://app.zoot.tawmy.dev/signout-callback-oidc
+    jwks_url: https://zoot.tawmy.dev/.well-known/jwks
+    backchannel_logout_url: https://zoot.tawmy.dev/signout-backchannel-oidc
+    optional_client_scopes:
+      - profile
+      - roles
