@@ -1,6 +1,13 @@
 - name: Configure Keycloak
   hosts: all
   gather_facts: true
+  pre_tasks:
+    - name: Load the group's vault from the auth-vault submodule
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/../auth-vault/{{ group_names | first }}/vault.yml"
+      tags:
+        - always
+
   roles:
     - role: keycloak-configuration
       tags:

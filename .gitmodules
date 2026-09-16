@@ -1,0 +1,3 @@
+[submodule "auth-vault"]
+	path = auth-vault
+	url = git@github.com:ZootopiaDiscord/auth-vault.git

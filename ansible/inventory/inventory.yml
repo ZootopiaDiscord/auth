@@ -5,5 +5,5 @@ all:
   children:
     sunset:
       hosts:
-        zoot.tawmy.dev:
+        zootopia.chat:
           ansible_connection: ssh
