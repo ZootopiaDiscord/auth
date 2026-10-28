@@ -134,12 +134,12 @@ public class DiscordGuildRolesMapper extends AbstractIdentityProviderMapper {
             if (toGroups) {
                 applyGroup(session, realm, user, mapperModel, name, held.contains(name));
             } else {
-                applyRealmRole(realm, user, mapperModel, name, held.contains(name));
+                applyRealmRole(session, realm, user, mapperModel, name, held.contains(name));
             }
         }
     }
 
-    private static void applyRealmRole(RealmModel realm, UserModel user,
+    private static void applyRealmRole(KeycloakSession session, RealmModel realm, UserModel user,
             IdentityProviderMapperModel mapperModel, String roleName, boolean shouldHold) {
         RoleModel role = realm.getRole(roleName);
         if (role == null) {
@@ -149,7 +149,9 @@ public class DiscordGuildRolesMapper extends AbstractIdentityProviderMapper {
         }
 
         if (shouldHold) {
-            user.grantRole(role);
+            if (isAdminRoleGrantAllowed(session, realm, role, mapperModel)) {
+                user.grantRole(role);
+            }
         } else {
             user.deleteRoleMapping(role);
         }
@@ -165,7 +167,9 @@ public class DiscordGuildRolesMapper extends AbstractIdentityProviderMapper {
         }
 
         if (shouldHold) {
-            user.joinGroup(group);
+            if (isAdminGroupJoinAllowed(session, realm, group, mapperModel)) {
+                user.joinGroup(group);
+            }
         } else {
             user.leaveGroup(group);
         }

@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,8 +32,12 @@ import org.keycloak.broker.provider.UserAuthenticationIdentityProvider;
 import org.keycloak.http.simple.SimpleHttp;
 import org.keycloak.http.simple.SimpleHttpRequest;
 import org.keycloak.http.simple.SimpleHttpResponse;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.Constants;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.IdentityProviderMapperModel;
+import org.keycloak.models.IdentityProviderModel;
+import org.keycloak.models.IdentityProviderStorageProvider;
 import org.keycloak.models.IdentityProviderSyncMode;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -50,6 +55,7 @@ class DiscordGuildRolesMapperTest {
     private static final String MOD_ROLE_ID = "987654321098765432";
     private static final String VIP_ROLE_ID = "876543210987654321";
     private static final String TOKEN = "discord-access-token";
+    private static final String IDP_ALIAS = "discord";
 
     private final DiscordGuildRolesMapper mapper = new DiscordGuildRolesMapper();
 
@@ -199,6 +205,59 @@ class DiscordGuildRolesMapperTest {
         verify(user).joinGroup(moderators);
         verify(user, never()).grantRole(any());
         verify(user, never()).deleteRoleMapping(any());
+    }
+
+    // --- admin roles (CVE-2026-12388) -----------------------------------------
+
+    @Test
+    void refusesARoleThatGrantsAdminAccessUnlessTheIdentityProviderAllowsIt() {
+        RoleModel moderator = compositeWithRealmAdmin("moderator");
+        when(realm.getRole("moderator")).thenReturn(moderator);
+        identityProviderAllowsAdminRoles(false);
+
+        updateBrokeredUser(Set.of(MOD_ROLE_ID), roleMapping(Map.of(MOD_ROLE_ID, List.of("moderator"))));
+
+        verify(user, never()).grantRole(any());
+    }
+
+    @Test
+    void grantsARoleThatGrantsAdminAccessWhenTheIdentityProviderAllowsIt() {
+        RoleModel moderator = compositeWithRealmAdmin("moderator");
+        when(realm.getRole("moderator")).thenReturn(moderator);
+        identityProviderAllowsAdminRoles(true);
+
+        updateBrokeredUser(Set.of(MOD_ROLE_ID), roleMapping(Map.of(MOD_ROLE_ID, List.of("moderator"))));
+
+        verify(user).grantRole(moderator);
+    }
+
+    /** Losing the Discord role must still take admin access away. */
+    @Test
+    void stillRevokesARoleThatGrantsAdminAccess() {
+        RoleModel moderator = compositeWithRealmAdmin("moderator");
+        when(realm.getRole("moderator")).thenReturn(moderator);
+        identityProviderAllowsAdminRoles(false);
+
+        updateBrokeredUser(Set.of(), roleMapping(Map.of(MOD_ROLE_ID, List.of("moderator"))));
+
+        verify(user).deleteRoleMapping(moderator);
+    }
+
+    @Test
+    void refusesAGroupThatGrantsAdminAccessUnlessTheIdentityProviderAllowsIt() {
+        GroupModel admins = mock(GroupModel.class);
+        RoleModel realmAdmin = realmAdmin();
+        when(admins.getRoleMappingsStream()).thenAnswer(invocation -> Stream.of(realmAdmin));
+        identityProviderAllowsAdminRoles(false);
+        Map<String, String> config = groupMapping(Map.of(MOD_ROLE_ID, List.of("/admins")));
+
+        try (MockedStatic<KeycloakModelUtils> utils = mockStatic(KeycloakModelUtils.class)) {
+            utils.when(() -> KeycloakModelUtils.findGroupByPath(session, realm, "/admins")).thenReturn(admins);
+
+            updateBrokeredUser(Set.of(MOD_ROLE_ID), config);
+        }
+
+        verify(user, never()).joinGroup(any());
     }
 
     // --- incomplete configuration ---------------------------------------------
@@ -424,8 +483,40 @@ class DiscordGuildRolesMapperTest {
     private static IdentityProviderMapperModel mapperModel(Map<String, String> config) {
         IdentityProviderMapperModel model = new IdentityProviderMapperModel();
         model.setName("discord-guild-roles");
+        model.setIdentityProviderAlias(IDP_ALIAS);
         model.setConfig(config);
         return model;
+    }
+
+    private void identityProviderAllowsAdminRoles(boolean allow) {
+        IdentityProviderModel idp = new IdentityProviderModel();
+        idp.setAlias(IDP_ALIAS);
+        idp.setAllowAdminRoleMapping(allow);
+        IdentityProviderStorageProvider identityProviders = mock(IdentityProviderStorageProvider.class);
+        when(identityProviders.getByAlias(IDP_ALIAS)).thenReturn(idp);
+        when(session.identityProviders()).thenReturn(identityProviders);
+    }
+
+    /** The realm-admin client role of the realm-management client, as Keycloak recognises it. */
+    private static RoleModel realmAdmin() {
+        ClientModel realmManagement = mock(ClientModel.class);
+        when(realmManagement.getClientId()).thenReturn(Constants.REALM_MANAGEMENT_CLIENT_ID);
+        RoleModel realmAdmin = mock(RoleModel.class);
+        when(realmAdmin.getId()).thenReturn("realm-admin-id");
+        when(realmAdmin.getName()).thenReturn("realm-admin");
+        when(realmAdmin.getContainer()).thenReturn(realmManagement);
+        return realmAdmin;
+    }
+
+    /** A plain-looking realm role that grants admin access through its composites. */
+    private static RoleModel compositeWithRealmAdmin(String name) {
+        RoleModel realmAdmin = realmAdmin();
+        RoleModel role = mock(RoleModel.class);
+        when(role.getId()).thenReturn(name + "-id");
+        when(role.getName()).thenReturn(name);
+        when(role.isComposite()).thenReturn(true);
+        when(role.getCompositesStream()).thenAnswer(invocation -> Stream.of(realmAdmin));
+        return role;
     }
 
     private static BrokeredIdentityContext context(String accessToken) {

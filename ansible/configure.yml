@@ -8,6 +8,13 @@
       tags:
         - always
 
+    - name: Load the host's vault overlay from the auth-vault submodule
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/../auth-vault/{{ vault_overlay }}/vault.yml"
+      when: vault_overlay is defined
+      tags:
+        - always
+
   roles:
     - role: keycloak-configuration
       tags:
