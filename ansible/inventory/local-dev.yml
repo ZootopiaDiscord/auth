@@ -6,3 +6,4 @@ all:
           ansible_connection: local
           validate_certs: false
           keycloak_url: https://auth.zoot.local
+          vault_overlay: local
