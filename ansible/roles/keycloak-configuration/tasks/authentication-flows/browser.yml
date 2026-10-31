@@ -83,6 +83,32 @@
               config:
                 denyErrorMessage: "Only members of {{ realm_role_mod }} can sign in to this application."
 
+      - subFlow: "{{ browser_flow_alias }} - zootopian"
+        requirement: "CONDITIONAL"
+        authenticationExecutions:
+          - providerId: "conditional-client-scope"
+            requirement: "REQUIRED"
+            authenticationConfig:
+              alias: "browser - client is zootopian only"
+              config:
+                client_scope: "{{ client_scope_zootopian }}"
+                negate: "false"
+
+          - providerId: "conditional-user-role"
+            requirement: "REQUIRED"
+            authenticationConfig:
+              alias: "browser - not zootopian"
+              config:
+                condUserRole: "{{ realm_role_zootopian }}"
+                negate: "true"
+
+          - providerId: "deny-access-authenticator"
+            requirement: "REQUIRED"
+            authenticationConfig:
+              alias: "browser - deny non zootopian"
+              config:
+                denyErrorMessage: "Only {{ realm_role_zootopian }}s can sign in to this application."
+
 - name: Bind browser flow to realm
   community.general.keycloak_realm:
     auth_keycloak_url: "{{ keycloak_url }}"

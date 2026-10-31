@@ -22,6 +22,8 @@
       role: "{{ realm_role_zpd }}"
     - scope: "{{ client_scope_mod }}"
       role: "{{ realm_role_mod }}"
+    - scope: "{{ client_scope_zootopian }}"
+      role: "{{ realm_role_zootopian }}"
   loop_control:
     label: "{{ item.scope }}"
 
