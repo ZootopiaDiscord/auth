@@ -7,11 +7,15 @@ keycloak_realm_roles:
   - "{{ realm_role_mod }}"
   - "{{ realm_role_zpd }}"
   - Junior ZPD
+  - "{{ realm_role_zootopian }}"
+  - Hustler
 
 realm_role_mod: Mod
 client_scope_mod: restrictto-mod
 realm_role_zpd: Zootopian Police
 client_scope_zpd: restrictto-zootopian-police
+realm_role_zootopian: Zootopian
+client_scope_zootopian: restrictto-zootopian
 role_restriction_post_login_flow: post login - role restrictions
 
 discord_guild_id: "164188105031680000"
@@ -19,3 +23,5 @@ discord_role_map:
   "563287715068772353": "{{ realm_role_mod }}"
   "164208316807905282": "{{ realm_role_zpd }}"
   "563264784938565632": Junior ZPD
+  "166184328521449482": "{{ realm_role_zootopian }}"
+  "580509497202835457": Hustler

@@ -21,6 +21,8 @@ clients:
       - https://app.zootopia.chat/signout-callback-oidc
     jwks_url: https://zootopia.chat/.well-known/jwks
     backchannel_logout_url: https://zootopia.chat/signout-backchannel-oidc
+    default_client_scopes:
+      - "{{ client_scope_zootopian }}"
     optional_client_scopes:
       - profile
       - roles
@@ -35,6 +37,8 @@ clients:
       - https://app.zoot.tawmy.dev/signout-callback-oidc
     jwks_url: https://zoot.tawmy.dev/.well-known/jwks
     backchannel_logout_url: https://zoot.tawmy.dev/signout-backchannel-oidc
+    default_client_scopes:
+      - "{{ client_scope_zootopian }}"
     optional_client_scopes:
       - profile
       - roles
